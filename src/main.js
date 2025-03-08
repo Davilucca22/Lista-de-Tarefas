@@ -43,6 +43,7 @@ function criaTarefa(texto) {
         tarefa.setAttribute('data-id',index)
 
         const paragrafo = document.createElement('p')
+        paragrafo.id = 'paragrafo'
         paragrafo.innerText = item
 
         const edit_del = document.createElement('div')
@@ -173,6 +174,9 @@ const btn_cancelar = document.querySelector('#cancelar').addEventListener('click
     input_texto.value = ''
     window.location.reload(true)
 })
+
+
+
 
 
 window.onload = () =>{
