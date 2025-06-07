@@ -117,6 +117,20 @@ function btn_editar() {
                 tarefa.innerText = input.value
                 window.location.reload(true)
             })
+
+            document.addEventListener('keyup',(l) => {
+                console.log(l)
+               if(l.key === 'Enter'){
+                const id = tarefa.getAttribute('data-id')
+                array[id] = input.value
+
+                SalvaLista(array)
+                desligaModal(true)
+
+                tarefa.innerText = input.value
+                window.location.reload(true)
+               }
+            })
         })
     })
 }
@@ -174,10 +188,6 @@ const btn_cancelar = document.querySelector('#cancelar').addEventListener('click
     input_texto.value = ''
     window.location.reload(true)
 })
-
-
-
-
 
 window.onload = () =>{
     recuperaDados()
