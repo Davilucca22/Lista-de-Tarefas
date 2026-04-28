@@ -69,7 +69,9 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
             <h2 className="text-lg font-semibold tracking-tight">
               {isEdit ? 'Editar tarefa' : 'Nova tarefa'}
             </h2>
-            <p className="mt-1 text-sm text-slate-300">Prioridade e status ajudam na organização.</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Prioridade e status ajudam na organização.
+            </p>
           </div>
           <Button variant="ghost" onClick={onClose} aria-label="Fechar modal">
             Fechar
@@ -78,7 +80,7 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
 
         <div className="mt-4 grid gap-3">
           <div>
-            <label className="mb-1 block text-xs text-slate-300">Título *</label>
+            <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Título *</label>
             <input
               className="input"
               value={title}
@@ -91,7 +93,7 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-slate-300">Descrição</label>
+            <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Descrição</label>
             <textarea
               className="input min-h-[96px]"
               value={description}
@@ -103,7 +105,9 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-slate-300">Prioridade</label>
+              <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">
+                Prioridade
+              </label>
               <select className="select" value={priority} onChange={(e) => setPriority(e.target.value)}>
                 <option value="high">Alta</option>
                 <option value="medium">Média</option>
@@ -111,7 +115,7 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-300">Status</label>
+              <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Status</label>
               <select className="select" value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option value="pending">Pendente</option>
                 <option value="done">Concluída</option>
