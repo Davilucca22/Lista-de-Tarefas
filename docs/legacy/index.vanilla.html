@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
+    <title>TaskFlow – Gerenciador Inteligente de Tarefas</title>
+    <link rel="stylesheet" href="./src/css/app.css">
+    <script type="module" src="./src/js/app.js"></script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+    <header class="app-header">
+        <div class="container header-grid">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true"></div>
+                <div class="brand-text">
+                    <h1>TaskFlow</h1>
+                    <p>Gerenciador inteligente de tarefas com prioridade, status e prazos.</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" id="btn-new-task" type="button">
+                    <span class="btn-icon" aria-hidden="true">+</span>
+                    Nova tarefa
+                </button>
+
+                <button class="btn btn-ghost" id="btn-export" type="button" title="Exportar para JSON">
+                    Exportar
+                </button>
+
+                <label class="btn btn-ghost file-btn" title="Importar JSON">
+                    Importar
+                    <input id="file-import" type="file" accept="application/json" />
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container">
+        <section class="panel">
+            <div class="panel-top">
+                <div class="stats" aria-live="polite">
+                    <div class="stat">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Pendentes</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Em andamento</div>
+                        <div class="stat-value" id="stat-in-progress">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Concluídas</div>
+                        <div class="stat-value" id="stat-done">0</div>
+                    </div>
+                    <div class="stat stat-danger">
+                        <div class="stat-label">Atrasadas</div>
+                        <div class="stat-value" id="stat-overdue">0</div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="field">
+                        <label for="search">Buscar</label>
+                        <input id="search" type="search" placeholder="Título ou descrição..." autocomplete="off" />
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-status">Status</label>
+                        <select id="filter-status">
+                            <option value="all">Todos</option>
+                            <option value="pending">Pendente</option>
+                            <option value="in_progress">Em andamento</option>
+                            <option value="done">Concluída</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-priority">Prioridade</label>
+                        <select id="filter-priority">
+                            <option value="all">Todas</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Média</option>
+                            <option value="low">Baixa</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="sort-mode">Ordenação</label>
+                        <select id="sort-mode">
+                            <option value="smart">Inteligente</option>
+                            <option value="due_asc">Data limite (mais próxima)</option>
+                            <option value="due_desc">Data limite (mais distante)</option>
+                            <option value="priority">Prioridade</option>
+                            <option value="updated_desc">Última atualização</option>
+                            <option value="created_desc">Criação</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-header">
+                <div class="list-title">
+                    <h2>Suas tarefas</h2>
+                    <p id="list-subtitle">0 tarefas</p>
+                </div>
+                <div class="list-actions">
+                    <button class="btn btn-ghost" type="button" id="btn-clear-done" title="Remover concluídas">
+                        Limpar concluídas
+                    </button>
+                    <button class="btn btn-danger" type="button" id="btn-reset" title="Apagar tudo">
+                        Resetar
+                    </button>
+                </div>
+            </div>
+
+            <section class="task-list" aria-label="Lista de tarefas">
+                <div id="empty-state" class="empty-state" hidden>
+                    <h3>Nenhuma tarefa encontrada</h3>
+                    <p>Crie uma nova tarefa ou ajuste os filtros de busca.</p>
+                    <button class="btn btn-primary" type="button" id="btn-new-task-empty">Criar tarefa</button>
+                </div>
+
+                <ul id="task-list" class="tasks" role="list"></ul>
+            </section>
+        </section>
+    </main>
+
+    <dialog id="task-modal" class="modal">
+        <form id="task-form" method="dialog" class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modal-title">Nova tarefa</h3>
+                    <p class="muted" id="modal-subtitle">Defina prioridade, status e prazo.</p>
+                </div>
+                <button class="icon-btn" type="button" id="btn-close-modal" aria-label="Fechar">
+                    ✕
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="task-id" />
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label for="task-title">Título *</label>
+                        <input id="task-title" type="text" required maxlength="80" autocomplete="off"
+                            placeholder="Ex: Revisar proposta do cliente" />
+                        <div class="hint">Até 80 caracteres.</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="task-due">Data limite</label>
+                        <input id="task-due" type="date" />
+                        <div class="hint">Atrasadas serão destacadas automaticamente.</div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="task-desc">Descrição</label>
+                    <textarea id="task-desc" rows="4" maxlength="300" placeholder="Contexto, links, checklist..."></textarea>
+                    <div class="hint">Até 300 caracteres.</div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label for="task-priority">Prioridade</label>
+                        <select id="task-priority">
+                            <option value="high">Alta</option>
+                            <option value="medium" selected>Média</option>
+                            <option value="low">Baixa</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="task-status">Status</label>
+                        <select id="task-status">
+                            <option value="pending" selected>Pendente</option>
+                            <option value="in_progress">Em andamento</option>
+                            <option value="done">Concluída</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="alert" id="form-error" role="alert" hidden></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" type="button" id="btn-cancel">Cancelar</button>
+                <button class="btn btn-primary" type="submit" id="btn-save">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <template id="task-item-template">
+        <li class="task">
+            <div class="task-main">
+                <div class="badges">
+                    <span class="badge badge-priority" data-badge="priority"></span>
+                    <span class="badge badge-status" data-badge="status"></span>
+                    <span class="badge badge-overdue" data-badge="overdue" hidden>Atrasada</span>
+                </div>
+
+                <div class="task-content">
+                    <div class="task-title-row">
+                        <h3 class="task-title" data-field="title"></h3>
+                        <div class="task-dates">
+                            <span class="date-pill" data-field="due" hidden></span>
+                        </div>
+                    </div>
+                    <p class="task-desc" data-field="desc" hidden></p>
+                    <p class="task-meta" data-field="meta"></p>
+                </div>
+            </div>
+
+            <div class="task-actions">
+                <button class="btn btn-ghost btn-sm" type="button" data-action="toggle-status">Avançar</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-action="edit">Editar</button>
+                <button class="btn btn-danger btn-sm" type="button" data-action="delete">Excluir</button>
+            </div>
+        </li>
+    </template>
+</body>
+
+</html>
