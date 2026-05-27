@@ -1,17 +1,17 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: new URL('.env', import.meta.url).pathname });
 
 import express from "express";
 import mongoose from "mongoose";
 import { router } from "./Router/router.js";
 
-//import cors from 'cors'
+import cors from 'cors'
 
 const app = express();
 
-/*app.use(cors({ //aceita requisiçoes apenas do endpoint passado
+app.use(cors({
     origin: globalThis.process?.env?.FRONT_URI
-}))*/
+}))
 
 app.use(express.json()); // trata JSON
 app.use(express.urlencoded({extended:true})) //trata Body

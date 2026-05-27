@@ -5,5 +5,5 @@ export const router = express.Router()
 import { Register } from "../Controllers/RegisterController.js"
 import { Login } from "../Controllers/LoginController.js"
 
-router.post('/',Register)
-router.get('/login',Login)
+router.post('/register', Register)
+router.post('/login', Login)

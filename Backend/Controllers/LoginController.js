@@ -3,13 +3,10 @@ import jwt from 'jsonwebtoken'
 import { Userr } from "../model/modelUser.js"
 
 export const Login = async (req,res) => {
+    const { form } = req.body
 
-    //const {form} = req.query
-
-    const form = { //modelo do que vier do front (mandar via query)
-        email:"Admin@gmail.com",
-        password:"123456"
-    }
+    if (!form?.email || !form?.password)
+        return res.status(400).json({ msg: "Campos obrigatórios: email, password" })
 
     const users = await Userr.findOne({EMAIL:form.email}) // busca pelo email
 

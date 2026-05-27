@@ -10,7 +10,7 @@ function formatCount(n, singular, plural) {
   return `${n} ${n === 1 ? singular : plural}`
 }
 
-export function HomePage() {
+export function HomePage({ user, onLogout }) {
   const { sortedTasks, addTask, updateTask, removeTask, toggleDone, resetAll } = useTasks()
   const { isDark, toggleTheme } = useTheme()
 
@@ -83,6 +83,7 @@ export function HomePage() {
           <div>
             <h1 className="text-xl font-semibold tracking-tight">TaskFlow</h1>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              {user?.NAME && <span className="mr-2">Olá, {user.NAME} •</span>}
               {formatCount(stats.total, 'tarefa', 'tarefas')} •{' '}
               {formatCount(stats.pending, 'pendente', 'pendentes')} •{' '}
               {formatCount(stats.done, 'concluída', 'concluídas')}
@@ -97,6 +98,11 @@ export function HomePage() {
             <Button variant="danger" onClick={handleReset}>
               Resetar
             </Button>
+            {onLogout && (
+              <Button variant="ghost" onClick={onLogout}>
+                Sair
+              </Button>
+            )}
           </div>
         </div>
       </header>
