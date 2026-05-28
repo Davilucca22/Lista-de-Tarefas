@@ -1,4 +1,4 @@
-import { Userr } from "../model/modelUser.js"
+import { Userr } from "../model/models.js"
 import  argon2 from "argon2"
 import jwt from 'jsonwebtoken'
 

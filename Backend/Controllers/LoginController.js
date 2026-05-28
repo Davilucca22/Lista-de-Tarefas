@@ -1,6 +1,6 @@
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
-import { Userr } from "../model/modelUser.js"
+import { Userr } from "../model/models.js"
 
 export const Login = async (req,res) => {
     const { form } = req.body
