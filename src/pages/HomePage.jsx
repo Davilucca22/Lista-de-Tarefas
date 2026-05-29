@@ -10,8 +10,8 @@ function formatCount(n, singular, plural) {
   return `${n} ${n === 1 ? singular : plural}`
 }
 
-export function HomePage({ user, onLogout }) {
-  const { sortedTasks, addTask, updateTask, removeTask, toggleDone, resetAll } = useTasks()
+export function HomePage({ user, token, onLogout }) {
+  const { sortedTasks, addTask, updateTask, removeTask, toggleDone, resetAll, loading } = useTasks(token)
   const { isDark, toggleTheme } = useTheme()
 
   const [query, setQuery] = useState('')

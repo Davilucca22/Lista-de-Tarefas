@@ -9,5 +9,5 @@ export default function App() {
     return <AuthPage onLogin={login} onRegister={register} />
   }
 
-  return <HomePage user={user} onLogout={logout} />
+  return <HomePage user={user} token={token} onLogout={logout} />
 }
