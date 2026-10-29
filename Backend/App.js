@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
-dotenv.config({ path: new URL('.env', import.meta.url).pathname });
+import { fileURLToPath } from "node:url";
+
+dotenv.config({ path: fileURLToPath(new URL("./.env", import.meta.url)) });
 
 import express from "express";
 import mongoose from "mongoose";
@@ -8,9 +10,10 @@ import { router } from "./Router/router.js";
 import cors from 'cors'
 
 const app = express();
+const allowedOrigin = process.env.FRONT_URI || 'http://localhost:5173';
 
 app.use(cors({
-    origin: true //globalThis.process?.env?.FRONT_URI
+    origin: allowedOrigin
 }))
 
 app.use(express.json()); // trata JSON
@@ -32,7 +35,7 @@ app.post('/add-test', (req, res) => res.json({ ok: true, msg: 'add-test ok' }));
 // log das rotas no momento da montagem (para debug)
 try {
     console.log('Rotas no router (router.stack):', router.stack.map(l => l.route ? l.route.path : l.name));
-    console.log('Rotas no app (app._router.stack):', (app._router && app._router.stack) ? app._router.stack.map(l => l.route ? l.route.path : l.name) : []);
+    console.log('Rotas no app:', (app.router?.stack ?? app._router?.stack ?? []).map(l => l.route ? l.route.path : l.name));
 } catch (e) {
     console.error('Erro ao logar rotas:', e.message || e);
 }
@@ -49,7 +52,7 @@ mongoose.connect(MONGO_URI)
 // Rota de debug para listar rotas registradas
 const listRoutes = () => {
     const details = [];
-    const stack = app._router && app._router.stack;
+    const stack = app.router?.stack ?? app._router?.stack;
     if (!stack) return details;
     stack.forEach((layer, i) => {
         const item = {
@@ -77,6 +80,12 @@ app.on("OK",() =>{
     app.listen(port, () => {
         console.log(`Servidor Rodando em http://localhost:${port}`)
     })
+
+    app.use((err, req, res, next) => {
+        console.error('Erro não tratado na API:', err);
+        if (res.headersSent) return next(err);
+        res.status(500).json({ msg: 'Erro interno do servidor.' });
+    });
 })
 
 // Log das rotas registradas (ajuda a debugar 'Cannot POST /add')

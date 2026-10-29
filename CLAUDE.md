@@ -27,20 +27,23 @@ No test framework is configured.
 
 ### Frontend — React 19 + Vite + Tailwind CSS
 
-All task state lives in `useTasks`; there is no external state library. Auth is not yet wired into the frontend — that integration is pending.
+Task and team state are loaded from the API by `useTasks` and `useTeam`; authentication is handled by `useAuth`.
 
 **Data flow:**
 ```
 HomePage
-  └── useTasks()          ← all task CRUD + sorting
+  └── useTasks()          ← task CRUD + sorting
+  └── useTeam()           ← team membership, invitations and manager indicators
   └── useTheme()          ← dark/light, persisted in localStorage
         └── TaskList      ← renders filtered task array
         └── TaskModal     ← create/edit form (controlled)
         └── ThemeToggle   ← button wrapper
 ```
 
-- **`src/hooks/useTasks.js`** — single source of truth for tasks. Sorting order: pending before done → priority (high/medium/low) → `updatedAt` desc. Throws on empty title.
-- **`src/services/taskStorage.js`** — `localStorage` under key `taskflow:tasks:v1`. `normalizeTask()` sanitizes/validates each item on load, silently dropping malformed entries.
+- **`src/hooks/useTasks.js`** — task API integration and sorting. Sorting order: pending before done → priority (high/medium/low) → `updatedAt` desc.
+- **`src/hooks/useTeam.js`** — team API integration, invite inbox and manager indicators.
+- **`src/services/taskService.js`** — task API requests and backend value normalization.
+- **`src/services/teamService.js`** — team, invitation and dashboard API requests.
 - **`src/hooks/useTheme.js`** — theme stored under `taskflow:theme`. Applies `dark` class to `<html>`. Follows system preference unless user has set an explicit override.
 - **`src/styles/tailwind.css`** — defines shared utility classes `.card`, `.input`, `.select` via `@layer components`. Tailwind dark mode uses `class` strategy.
 
@@ -53,12 +56,11 @@ HomePage
 Backend/
   App.js                  ← entry point: Express, CORS, MongoDB connection
   Router/router.js        ← route definitions
-  Controllers/
-    RegisterController.js ← POST /register
-    LoginController.js    ← POST /login
-  model/
-    modelUser.js          ← Mongoose User schema (NAME, EMAIL, PASSWORD)
-  .env                    ← env vars (not committed)
+  Controllers/            ← auth, task and team controllers
+  model/models.js         ← Mongoose users, tasks, teams and invitations
+  services/               ← authentication, authorization and serverless helpers
+  .env                    ← local environment variables
+  .env.example            ← environment variable template
 ```
 
 **API routes:**
@@ -66,6 +68,10 @@ Backend/
 |--------|-------------|------------------------------|----------------------|
 | POST   | `/register` | `{ name, email, password }`  | Create account, returns JWT |
 | POST   | `/login`    | `{ email, password }`        | Authenticate, returns JWT   |
+| GET/POST | `/team` | — / `{ name }` | Read or create a team |
+| GET/POST | `/team/invites` | — / `{ email }` | Read in-app invitations or invite a registered account |
+| POST | `/team/invites/respond` | `{ inviteId, accept }` | Accept or decline an invitation |
+| GET | `/team/dashboard` | — | Manager indicators per team member |
 
 All request bodies must have the shape `{ form: { ... } }`.
 
@@ -74,7 +80,7 @@ All request bodies must have the shape `{ form: { ... } }`.
 - `mongoose` — MongoDB ODM; default DB: `taskflow` on `mongodb://127.0.0.1:27017`
 - `argon2` — password hashing
 - `jsonwebtoken` — JWT generation/signing (14-day expiry)
-- `cors` — restricts to `FRONT_URI` env var
+- `cors` — restricts browser requests to `FRONT_URI` (default `http://localhost:5173`)
 - `dotenv` — loads `Backend/.env`
 
 **Environment variables (`Backend/.env`):**
@@ -83,6 +89,7 @@ PORT=3000
 MONGO_URI=<mongodb atlas or local URI>
 FRONT_URI=http://localhost:5173
 JWT_SECRET=<secret>
+INITIAL_MANAGER_EMAIL=<email>
 ```
 
 ---
@@ -110,4 +117,4 @@ fetch('/api/login', {
 })
 ```
 
-Both endpoints return `{ msg: string, token?: string }`.
+Auth endpoints return `{ msg: string, token?: string }`. Task dates use `YYYY-MM-DD`; invitations appear in the invited user's TaskFlow inbox and are not emailed externally.

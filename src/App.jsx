@@ -3,11 +3,11 @@ import { AuthPage } from './pages/AuthPage.jsx'
 import { HomePage } from './pages/HomePage.jsx'
 
 export default function App() {
-  const { isAuthenticated, user, token, login, register, logout } = useAuth()
+  const { isAuthenticated, user, token, login, register, logout, replaceToken } = useAuth()
 
   if (!isAuthenticated) {
     return <AuthPage onLogin={login} onRegister={register} />
   }
 
-  return <HomePage user={user} token={token} onLogout={logout} />
+  return <HomePage user={user} token={token} onLogout={logout} onTokenChange={replaceToken} />
 }

@@ -153,7 +153,7 @@ function btn_deleta() {
 
 const array = []
 
-const btn_add = document.querySelector('#btn-add').addEventListener('click', () => {
+document.querySelector('#btn-add').addEventListener('click', () => {
     desligaModal(false)
 
     //da foco ao input para digitar
@@ -170,7 +170,7 @@ const btn_add = document.querySelector('#btn-add').addEventListener('click', () 
 
 })
 
-const btn_confirma = document.querySelector('#confirmar').addEventListener('click', () => {
+document.querySelector('#confirmar').addEventListener('click', () => {
     const input_texto = document.querySelector('#texto')
 
     if (input_texto.value !== '') {
@@ -182,7 +182,7 @@ const btn_confirma = document.querySelector('#confirmar').addEventListener('clic
     }
 })
 
-const btn_cancelar = document.querySelector('#cancelar').addEventListener('click', () => {
+document.querySelector('#cancelar').addEventListener('click', () => {
     desligaModal(true)
     const input_texto = document.querySelector('#texto')
     input_texto.value = ''

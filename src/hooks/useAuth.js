@@ -5,7 +5,11 @@ const TOKEN_KEY = 'taskflow:token'
 
 function decodeToken(token) {
   try {
-    return JSON.parse(atob(token.split('.')[1]))
+    const payload = token.split('.')[1]
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='))
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes))
   } catch {
     return null
   }
@@ -16,7 +20,7 @@ function getStoredToken() {
   if (!token) return null
   const payload = decodeToken(token)
   // descarta token expirado
-  if (!payload || payload.exp * 1000 < Date.now()) {
+  if (!payload || payload.exp * 1000 < Date.now() || !['manager', 'member'].includes(payload.ROLE)) {
     localStorage.removeItem(TOKEN_KEY)
     return null
   }
@@ -51,5 +55,10 @@ export function useAuth() {
     setToken(null)
   }
 
-  return { user, token, login, register, logout, isAuthenticated: !!token }
+  function replaceToken(nextToken) {
+    localStorage.setItem(TOKEN_KEY, nextToken)
+    setToken(nextToken)
+  }
+
+  return { user, token, login, register, logout, replaceToken, isAuthenticated: !!token }
 }

@@ -1,6 +1,13 @@
 import { Badge } from './Badge.jsx'
 import { Button } from './Button.jsx'
 
+function currentDateKey() {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
 export function TaskItem({ task, onToggleDone, onEdit, onDelete }) {
   return (
     <li className="card p-4 transition hover:bg-black/[0.03] dark:hover:bg-white/[0.07]">
@@ -27,6 +34,13 @@ export function TaskItem({ task, onToggleDone, onEdit, onDelete }) {
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="priority" value={task.priority} />
             <Badge variant="status" value={task.status} />
+            {task.category && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-white/10 dark:text-slate-300">{task.category}</span>}
+            {task.dueDate && (
+              <span className={`rounded-full px-2.5 py-1 text-xs ${task.status === 'pending' && task.dueDate < currentDateKey() ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200' : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300'}`}>
+                Vence: {task.dueDate}
+              </span>
+            )}
+            {task.assigneeName && <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs text-violet-700 dark:bg-violet-500/20 dark:text-violet-200">Responsável: {task.assigneeName}</span>}
           </div>
         </div>
 
@@ -50,4 +64,3 @@ export function TaskItem({ task, onToggleDone, onEdit, onDelete }) {
     </li>
   )
 }
-

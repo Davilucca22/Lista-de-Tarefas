@@ -13,16 +13,16 @@ const PRIORITY_WEIGHT = { high: 0, medium: 1, low: 2 }
 
 export function useTasks(token) {
   const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token) return
-    setLoading(true)
     fetchTasks(token)
       .then((data) => {
         if (data.list) setTasks(data.list.map(fromBackend))
+        setError('')
       })
-      .finally(() => setLoading(false))
+      .catch((loadError) => setError(loadError.message || 'Não foi possível carregar as tarefas.'))
   }, [token])
 
   const sortedTasks = useMemo(() => {
@@ -43,11 +43,15 @@ export function useTasks(token) {
       descricao: (input.description ?? '').trim(),
       prioridade: PRIORITY_TO_BACK[input.priority ?? 'medium'],
       status: STATUS_TO_BACK[input.status ?? 'pending'],
+      category: (input.category ?? 'Geral').trim() || 'Geral',
+      dueDate: input.dueDate ?? '',
+      responsavel: input.assigneeId || '',
     })
 
     if (data.addToList) {
       setTasks((prev) => [fromBackend(data.addToList), ...prev])
     }
+    setError('')
   }
 
   async function updateTask(id, patch) {
@@ -71,14 +75,19 @@ export function useTasks(token) {
       DESCRICAO: updated.description,
       PRIORIDADE: PRIORITY_TO_BACK[updated.priority],
       STATUS: STATUS_TO_BACK[updated.status],
+      CATEGORIA: updated.category,
+      DATA_VENCIMENTO: updated.dueDate,
+      ASSIGNED_TO: updated.assigneeId,
     })
 
     setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)))
+    setError('')
   }
 
   async function removeTask(id) {
     await deleteTask(token, id)
     setTasks((prev) => prev.filter((t) => t.id !== id))
+    setError('')
   }
 
   async function toggleDone(id) {
@@ -87,10 +96,13 @@ export function useTasks(token) {
     await updateTask(id, { status: task.status === 'done' ? 'pending' : 'done' })
   }
 
-  async function resetAll() {
-    await Promise.all(tasks.map((t) => deleteTask(token, t.id)))
-    setTasks([])
+  async function resetAll(canDeleteAssigned = false) {
+    const removable = canDeleteAssigned ? tasks : tasks.filter((task) => !task.assigneeId)
+    await Promise.all(removable.map((task) => deleteTask(token, task.id)))
+    const removedIds = new Set(removable.map((task) => task.id))
+    setTasks((prev) => prev.filter((task) => !removedIds.has(task.id)))
+    setError('')
   }
 
-  return { tasks, sortedTasks, addTask, updateTask, removeTask, toggleDone, resetAll, loading }
+  return { tasks, sortedTasks, addTask, updateTask, removeTask, toggleDone, resetAll, error }
 }

@@ -1,6 +1,5 @@
 import argon2 from 'argon2'
-import jwt from 'jsonwebtoken'
-import { Userr } from "../model/models.js"
+import { applyInitialManagerRole, createAuthToken, findUserByEmail } from '../services/auth.js'
 
 export const Login = async (req,res) => {
     const { form } = req.body
@@ -8,9 +7,7 @@ export const Login = async (req,res) => {
     if (!form?.email || !form?.password)
         return res.status(400).json({ msg: "Campos obrigatórios: email, password" })
 
-    const users = await Userr.findOne({EMAIL:form.email}) // busca pelo email
-
-    console.log(users)
+    const users = await findUserByEmail(form.email)
 
     if(!users) return res.json({msg:"Usuario não Encontrado"})
 
@@ -18,7 +15,9 @@ export const Login = async (req,res) => {
 
     if(!compPass) return res.json({msg:"Senha Incorreta!"})
 
-    const token = jwt.sign({id:users._id, NAME:users.name},globalThis.process?.env.JWT_SECRET,{expiresIn:'14d'})
+    applyInitialManagerRole(users)
+    await users.save()
+    const token = createAuthToken(users)
     
     res.json({msg:"Login Realizado!",token})
 

@@ -1,32 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './Button.jsx'
 
-export function TaskModal({ open, initialTask, onClose, onSave }) {
+export function TaskModal({ open, initialTask, onClose, onSave, members = [], isManager = false }) {
   const isEdit = Boolean(initialTask?.id)
 
-  const defaults = useMemo(
-    () => ({
-      title: initialTask?.title ?? '',
-      description: initialTask?.description ?? '',
-      priority: initialTask?.priority ?? 'medium',
-      status: initialTask?.status ?? 'pending',
-    }),
-    [initialTask],
-  )
-
-  const [title, setTitle] = useState(defaults.title)
-  const [description, setDescription] = useState(defaults.description)
-  const [priority, setPriority] = useState(defaults.priority)
-  const [status, setStatus] = useState(defaults.status)
+  const [title, setTitle] = useState(initialTask?.title ?? '')
+  const [description, setDescription] = useState(initialTask?.description ?? '')
+  const [priority, setPriority] = useState(initialTask?.priority ?? 'medium')
+  const [status, setStatus] = useState(initialTask?.status ?? 'pending')
+  const [category, setCategory] = useState(initialTask?.category ?? 'Geral')
+  const [dueDate, setDueDate] = useState(initialTask?.dueDate ?? '')
+  const [assigneeId, setAssigneeId] = useState(initialTask?.assigneeId ?? '')
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    setTitle(defaults.title)
-    setDescription(defaults.description)
-    setPriority(defaults.priority)
-    setStatus(defaults.status)
-    setError('')
-  }, [defaults])
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -38,15 +23,18 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
 
   if (!open) return null
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     try {
       setError('')
-      onSave({
+      await onSave({
         title,
         description,
         priority,
         status,
+        category,
+        dueDate,
+        assigneeId,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar.')
@@ -123,6 +111,40 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Categoria</label>
+              <input
+                className="input"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Ex: Trabalho, Casa..."
+                maxLength={40}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Data de vencimento</label>
+              <input
+                className="input"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {isManager && members.length > 0 && (
+            <div>
+              <label className="mb-1 block text-xs text-slate-600 dark:text-slate-300">Responsável</label>
+              <select className="select" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+                <option value="">Não atribuída</option>
+                {members.filter((member) => member.ROLE === 'member').map((member) => (
+                  <option key={member._id} value={member._id}>{member.NAME} ({member.EMAIL})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {error ? (
             <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm text-rose-200">
               {error}
@@ -142,4 +164,3 @@ export function TaskModal({ open, initialTask, onClose, onSave }) {
     </div>
   )
 }
-
